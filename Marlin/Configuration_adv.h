@@ -506,7 +506,7 @@
  *   USE_OCR2A_AS_TOP sacrifices duty cycle control resolution to achieve this broader range of frequencies.
  */
 #if ENABLED(FAST_PWM_FAN)
-  #define FAST_PWM_FAN_FREQUENCY 10
+  #define FAST_PWM_FAN_FREQUENCY 7.8
   //#define USE_OCR2A_AS_TOP
 #endif
 
