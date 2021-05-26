@@ -999,6 +999,10 @@ void GcodeSuite::process_parsed_command(const bool no_ok/*=false*/) {
         case 7219: M7219(); break;                                // M7219: Set LEDs, columns, and rows
       #endif
 
+      #if ENABLED(ENABLE_CUSTOM_GCODE)
+        case 9891: M9891(); break;
+      #endif
+
       default: parser.unknown_command_warning(); break;
     }
     break;
