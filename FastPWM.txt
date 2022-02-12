@@ -32,7 +32,7 @@ void GcodeSuite::M9891() {
 
     const uint16_t dfreq = parser.ushortval('F');
 
-    // Set frequency for port
+    // Set frequency for port i.e. M9891 PPA0 F1000
     
     set_pwm_frequency((pin_t)pport, (int)dfreq);
 }
