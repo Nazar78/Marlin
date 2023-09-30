@@ -1,31 +1,47 @@
-Set {&gpioa, &timer5, &adc1, 0, 1, 0}, /* PA0 */ in /Users/%USERPROFILE%/.platformio/packages/framework-arduinoststm32-maple/STM32F1/variants/generic_stm32f103r/boards.cpp
-Commented #define FAN_SOFT_PWM in Marlin/src/pins/stm32f1/pins_CREALITY_V4.h
-Uncommented #define FAST_PWM_FAN in Marlin/Configuration.h
-Commented #define FAN_SOFT_PWM in Marlin/Configuration.h (DO NOT comment out #define SOFT_PWM_SCALE 0)
-Set #define STEP_TIMER_NUM 4 // for other boards, five is fine. in Marlin/src/HAL/STM32F1/timers.h
-
+/Users/%USERPROFILE%/.platformio/packages/framework-arduinoststm32-maple/STM32F1/variants/generic_stm32f103r/boards.cpp:
 ********************************************************************************************************
-gcode.h:
-********************************************************************************************************
+Set {&gpioa, &timer5, &adc1, 0, 1, 0}, /* PA0 */
 
+Marlin/src/pins/stm32f1/pins_CREALITY_V4.h:
+********************************************************************************************************
+Commented #define FAN_SOFT_PWM
+
+Marlin/Configuration.h:
+********************************************************************************************************
+Uncommented #define FAST_PWM_FAN
+Commented #define FAN_SOFT_PWM (DO NOT comment out #define SOFT_PWM_SCALE 0)
+
+Marlin/Configuration_adv.h:
+********************************************************************************************************
+Uncommented and set #define FAN_MIN_PWM 0 (otherwise the laser will never turn OFF, this then requires a higher fan speed kickstart compensation value for 3D printing, i.e. fan speed values must be between 20-100% in slicer or the fan won't spin)
+Uncommented and set #define FAST_PWM_FAN_FREQUENCY 488 (for 3D printing without high pitch noise, use custom M9891 gcode below to set 1000 for laser)
+Uncommented #define LASER_SYNCHRONOUS_M106_M107 (improve laser timings)
+
+Marlin/src/HAL/STM32F1/timers.h:
+********************************************************************************************************
+Set #define STEP_TIMER_NUM 4 // for other boards, five is fine.
+
+Insert into Marlin\src\gcode\gcode.h:
+********************************************************************************************************
 ...
 +   static void M9891();
+
+    static void T(const int8_t tool_index);
 ...
 
-********************************************************************************************************
-gcode.cpp:
+Insert into Marlin\src\gcode\gcode.cpp:
 ********************************************************************************************************
 ...
 +   case 9891: M9891(); break;
+
+    default: parser.unknown_command_warning(); break;
 ...
 
+Add file Marlin\src\gcode\M9891.cpp:
 ********************************************************************************************************
-Add file gcode\M9891.cpp:
-********************************************************************************************************
+#include "../inc/MarlinConfig.h"
 
-#include "../../inc/MarlinConfig.h"
-
-#include "../gcode.h"
+#include "gcode.h"
 
 void GcodeSuite::M9891() {
     const uint8_t pport = parser.byteval('P');
@@ -36,3 +52,12 @@ void GcodeSuite::M9891() {
     
     set_pwm_frequency((pin_t)pport, (int)dfreq);
 }
+
+Replace to fix maple N32 python build error:buildroot/share/PlatformIO/scripts/marlin.py:21
+********************************************************************************************************
+def replace_define(field, value):
+    envdefs = env['CPPDEFINES'].copy()
+    for define in envdefs:
+        if define[0] == field:
+            env['CPPDEFINES'].remove(define)
+    env['CPPDEFINES'].append((field, value))
